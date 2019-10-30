@@ -85,7 +85,29 @@ function definirThreshold(){
 	waitForUser("OK, pour appliquer le masque");
 	
 	run("Convert to Mask");                   
+run("Close")
+}
+function ZPlot(){
+	//Trouve le nom du fichier de base et le path
+	file = File.nameWithoutExtension;
+	dir = File.directory;
 
+	//Ouvre Plot z-axis
+	run("Plot Z-axis Profile");
+	//Va chercher les values du graphiques
+	Plot.getValues(x, y);
+	//Fermer les deux fenêtres
+	run("Close");
+	run("Close");
+
+	//Créé une table de résultat pour seulement la slice visée.
+	setResult("X", 0, x[bandeSelectionne-1]);
+	setResult("Y", 0, y[bandeSelectionne-1]);
+	updateResults();
+
+	//Enregistre la table de résultat dans un fichier txt du même nom que le stacks
+	saveAs("Results", dir + file + ".txt");
+	run("Close");
 }
 
 //FIN FONCTIONS CREE

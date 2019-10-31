@@ -63,7 +63,7 @@ function ouvrirCube(){
 	file = File.openDialog("Choose your stack of images");
 	estBonneExtension = false;
 	
-	//Verifier si lextension est bonne
+	//Verifier si l'extension est bonne
 	length = lengthOf(file);
 	index = indexOf(file, ".");
 	extension = substring(file, index, length);
@@ -79,7 +79,10 @@ function ouvrirCube(){
 		afficherContenu("Type d'extensions autorisé : .tif, .tiff, .TIFF, .tf2, .tf8, .btf, .ome.tif" ,"Erreur d'extension");
 	}
 	else{	
+//Essai avec le bio format, tu va voir sa donne un seul résultat
+//Essai avec le open que j'ai mis en commentaire à la place, et là, plusieur résultat
     	run("Bio-Formats", "open=" + file + " autoscale color_mode=Default open_all_series rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT");
+    	//open(file);
     	imageID = getImageID();
 		selectImage(imageID);
 		return imageID;
@@ -150,14 +153,14 @@ function definirThreshold(){
 	run("Threshold..."); //Ouvre Threshold                          
 	waitForUser("OK, pour appliquer le masque");
 	run("Convert to Mask");                   
-
+	run("Close");
 }
 
-//Date : 
-//Titre : 
-//Description :
+//Date : 30 octobre 2019
+//Titre : Fonction entourant le diagramme
+//Description : Fait le plot, en retire les données et les enregistres dans un fichier txt
 function ZPlot(){
-	file = File.nameWithoutExtension;
+	name = File.nameWithoutExtension;
 	dir = File.directory;
 
 	//Ouvre Plot z-axis
@@ -168,15 +171,16 @@ function ZPlot(){
 	run("Close");
 	run("Close");
 
-	//Créé une table de résultat pour seulement la slice visée.
-	setResult("X", 0, x[bandeSelectionne-1]);
-	setResult("Y", 0, y[bandeSelectionne-1]);
+	//Créé une table des résultats.
+	for (i = 0; i < x.length; i++) 
+	{
+		setResult("X", i, x[i]);
+		setResult("Y", i, y[i]);
+	}
 	updateResults();
-
 	//Enregistre la table de résultat dans un fichier txt du même nom que le stacks
-	saveAs("Results", dir + file + ".txt");
+	saveAs("Results", dir + name + ".txt");
 	run("Close");
-	
 }
 
 //Date : 30 Octobre 2019

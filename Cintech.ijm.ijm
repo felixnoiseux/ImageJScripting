@@ -1,58 +1,117 @@
-//TODO : ETAPE 2.
+//				Informations
+//------------------------------------------------
+//
+//				  Equipe
+//
+//	Auteur : Felix Noiseux, Frederic Avoine
+//	Date : Automne 2019
+//	Projet : Cintech Script d'automatisation d'image.
+//
+//				Description		
+//				  
+//	Ce script permet à un utilisateur de faire un 
+//	traitement de cube d'images de sorte automatique.
+//	Il est fabriqué à partir d'appel de fonctions.
+//	Fonction principale soit choixDefault() si
+//	l'utilisateur à sélectionner un cube de 75 images,
+//  sinon choixPersonnalise().
+//	Ci-dessous : les étapes de fonctionnement.
+//
+//	1. Ouvre un cube
+//	2. Selectionne un bande sur laquelle travaillé
+//	3. Defini et applique un Threshold
+//	4. Calcul un ZPLOT
+//
+//	 ---Droit de modification permis avec plaisir.---
 
-nbBandesMax = 75; //Corespond au nombre de longeur d'onde utilise par default
-bandeSelectionne = 30; //30 par default
+
+nbBandesMax = 75; 
+bandeSelectionne = 30; 
 myImageID = "";
 file = "";
-opt_default = "Traitement image (.tif) avec 75 bandes";
-opt_personnalise = "Traitement image (.tif) personnalise";
 
-//DEBUT
-Dialog.create("Traitement Cube");
-Dialog.addMessage("Veuillez sélecitonner ce que vous voulez faire.");
-Dialog.addMessage("2 options est disponible.");
-Dialog.addChoice("Options :", newArray(opt_default, opt_personnalise));
-Dialog.show();
-choix = Dialog.getChoice();
-
-if(choix == opt_default)
-{
-	myImageID = ouvrirCube();
-	if(nSlices != nbBandesMax){
-		afficherErreur(); //Mauvais choix
-	}
-	else {
-		bandeSelectionne = selectionnerBand(false); //Demande bande NonPerso
-	    definirThreshold();//Defini threshold et applique masque
-	}
-}
-else if(choix == opt_personnalise){
-	myImageID = ouvrirCube();
-	bandeSelectionne = selectionnerBand(true); //Demande bande Perso
-	definirThreshold(); //Defini threshold et applique masque
-}
+choix = fenetreChoix(); 
+if(choix == opt_default) { choixDefault();} 
+else if(choix == opt_personnalise){ choixPersonnalise(); }
 
 exit();
-//FIN
 
 
-//FONCTIONS CREE
-function ouvrirCube(){
-	setBatchMode(true);
-	file = File.openDialog("Choose your stack of images");
-    run("Bio-Formats", "open=" + file + " autoscale color_mode=Default open_all_series rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT");
-    imageID = getImageID();
-	selectImage(imageID);
-	return imageID;
+//Date : 30 Octobre 2019
+//Titre : Fonction permettant de faire apparaitre un "POP-UP" personnalisé.
+//Description : Contenu = Contenu souhaitant afficher, titre = tire de la box
+function afficherContenu(contenu,titre){
+	Dialog.create(titre);
+	Dialog.addMessage(contenu);
+	Dialog.show();
 }
-function afficherErreur(){
+
+//Date : 30 Octobre 2019
+//Titre : Fonction Permmant d'ouvrir un cube en gérant les exceptions
+//Description : Demande à l'utilisateur d'ouvrir un cube. Si le format n'est pas bon, affiche erreur et retourne -1.
+//				-1 Sert d'indicateur à la fonction parente.
+//
+//				do{
+//					myImageID = ouvrirCube();
+//				}while(myImageID == -1);
+//
+function ouvrirCube(){
+
+	setBatchMode(true);
+	extensions = newArray(".tif",".tiff",".TIFF",".tf2",".tf8",".btf",".ome.tif");
+	file = File.openDialog("Choose your stack of images");
+	estBonneExtension = false;
+	
+	//Verifier si lextension est bonne
+	length = lengthOf(file);
+	index = indexOf(file, ".");
+	extension = substring(file, index, length);
+
+	for(i=0;i<extensions.length;i++){
+		if(extensions[i] == extension)
+		{
+			estBonneExtension = true;
+		}
+	}
+
+	if(!estBonneExtension){
+		afficherContenu("Type d'extensions autorisé : .tif, .tiff, .TIFF, .tf2, .tf8, .btf, .ome.tif" ,"Erreur d'extension");
+	}
+	else{	
+    	run("Bio-Formats", "open=" + file + " autoscale color_mode=Default open_all_series rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT");
+    	imageID = getImageID();
+		selectImage(imageID);
+		return imageID;
+	}
+	return -1;
+	
+}
+
+//Date : 30 Octobre 2019
+//Titre : Fonction affichant erreur si la bande n'est pas 75.
+//Description : Laisse le choix à l'utilisateur de continuer, en version personnalisé, ou, quitter.
+function afficherErreurBande(){
+
 	close();
 	Dialog.create("Erreur");
-	Dialog.addMessage("Cube ne contient pas 75 bandes. Veuillez recommencer.");	
-	Dialog.show()
-	exit();
+	Dialog.addMessage("Ce cube ne contient pas 75 bandes.");	
+	Dialog.addChoice("Voulez-vous être redirigé vers la version personnalisé  ? \n En répondant : Non vous fermer le programme.", newArray("Oui", "Non"));
+	Dialog.show();
+	
+	choix = Dialog.getChoice();
+	if(choix == "Oui"){
+		choixPersonnalise();
+	}else if(choix == "Non"){
+		exit();
+	}else{
+		exit();
+	}
 
 }
+
+//Date : 30 Octobre 2019
+//Titre : Fonction permettant de selectionner la bande à travailler.
+//Description : Si estPersonnalisé, la bande MAX n'est plus 75, mais bien le max de la personnalisé.
 function selectionnerBand(estPersonnalise){
 
 	if(estPersonnalise == true) {
@@ -66,6 +125,7 @@ function selectionnerBand(estPersonnalise){
 	Dialog.addMessage("Selectionner la bande a travaille sur votre cube.");
 	Dialog.addSlider("Bande :", 0, nbBandesMax, bandeSelectionne);
 	Dialog.show();
+	
 	bandeSelectionne = Dialog.getNumber();
 	
 	//INITIALISATION DE LA BANDE --- A VERIFIER
@@ -77,17 +137,27 @@ function selectionnerBand(estPersonnalise){
 
 	return bandeSelectionne;
 }
+
+//Date : 30 Octobre 2019
+//Titre : Fonction définissant un Threshold.
+//Description : Laisse définir et appliquer le Threshold par l'utilisateur.
 function definirThreshold(){
+
 	setBatchMode(false);
 	selectImage(myImageID);
 	setSlice(bandeSelectionne);
 	run("Threshold..."); //Ouvre Threshold                          
 	waitForUser("OK, pour appliquer le masque");
-	
 	run("Convert to Mask");                   
-run("Close")
+	run("Close")
+
 }
+
+//Date : 
+//Titre :
+//Description : 
 function ZPlot(){
+	
 	//Trouve le nom du fichier de base et le path
 	file = File.nameWithoutExtension;
 	dir = File.directory;
@@ -108,72 +178,64 @@ function ZPlot(){
 	//Enregistre la table de résultat dans un fichier txt du même nom que le stacks
 	saveAs("Results", dir + file + ".txt");
 	run("Close");
+	
 }
 
-//FIN FONCTIONS CREE
+//Date : 30 Octobre 2019
+//Titre : Programme ChoixDefault
+//Description : Regrouppe tout les fonctionnalité du "Script". 
+//				C'est ici que le tout ce passe pour un cube de 75 images.
+function choixDefault(){
+	
+	do{
+		myImageID = ouvrirCube();
+	}
+	while(myImageID == -1);
+	
+	if(nSlices != nbBandesMax){
+		afficherErreurBande(); //Mauvais choix
+	}
+	else {
+		bandeSelectionne = selectionnerBand(false); //Demande bande NonPerso
+	    definirThreshold();//Defini threshold et applique masque
+	    ZPlot();
+	}
+	
+}
 
-//FONCTIONS DE BASE
-function stack_imgs(files,name){
-	if(files.length>1){
-		command2 = "  title="+name;
-		for(i=0;i<files.length;i++){
-			index = i+1;
-			command2=command2+" image"+index+"="+files[i];
-		}
-		run("Concatenate...", command2);
-	}else{
-		selectWindow(files[0]);
-		rename(name);
-	}
+//Date : 30 Octobre 2019
+//Titre : Programme ChoixDefault
+//Description : Regrouppe tout les fonctionnalité du "Script". 
+//				C'est ici que le tout ce passe pour un cube autre que 75 images
+function choixPersonnalise(){
+	
+	do{
+		myImageID = ouvrirCube();
+	}while(myImageID == -1);
+	
+	bandeSelectionne = selectionnerBand(true); //Demande bande Perso
+	definirThreshold(); //Defini threshold et applique masque
+	ZPlot();
+	
 }
-//for tests
-function print_array(arr){
-	for(i=0;i<arr.length;i++){
-		print(arr[i]);
-	}
+
+//Date : 30 Octobre 2019
+//Titre : Fenetre Principal (Premiere Fenetre)
+//Description : Fenetre apparaissant au lancement du script laissant choix à l'utilisateur.
+//				Retourne le choix de l'utilisateur. Soit un cube = 75 bandes ou un cube != 75 bandes.
+function fenetreChoix(){
+	
+	opt_default = "Traitement image (.tif) avec 75 bandes";
+	opt_personnalise = "Traitement image (.tif) personnalisé";
+
+	Dialog.create("Traitement Cube");
+	Dialog.addMessage("Veuillez sélectionner ce que vous voulez faire.");
+	Dialog.addMessage("2 options sont disponibles.");
+	Dialog.addChoice("Options :", newArray(opt_default, opt_personnalise));
+	Dialog.show();
+	
+	choix = Dialog.getChoice();
+	return choix;
+	
 }
-function ask_for_selection(title,request){
-	setTool(0);
-	waitForUser(title,request);
-	selectImage(myImageID);
-	//Check if he no idiot
-	if (selectionType() != 0){
-		beep();
-		if(getBoolean("Your rectangle is not a rectangle ! Do you want to continue ?"))
-		{
-			ask_for_selection(title,request);
-		}else{
-			exit();
-		}
-	}
-}
-function measureStack(){
-	saveSettings;
-	setOption("Stack position", true);
-	for (n=1; n<=nSlices; n++) {
-		setSlice(n);
-		run("Measure");
-	}
-	restoreSettings;
-}
-function StDev(pole) {
-    SUM=0;
-    n=pole.length;
-    mean=Mean(pole);
-    for (x=0; x<n; x++) {
-         SUM = SUM+square(pole[x]-mean);
-    }
-    return sqrt(SUM/(n-1));
-}
-function Mean(pole) {
-    mean=0;
-    n=pole.length;
-    for (x=0; x<n; x++) {
-        mean+=pole[x];
-    }
-    return mean/n;
-}
-function square(a) {
-    return a*a;
-}
-//FIN FONCTION DE BASE
+

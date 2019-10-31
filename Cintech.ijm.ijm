@@ -24,7 +24,8 @@
 //
 //	 ---Droit de modification permis avec plaisir.---
 
-
+opt_default = "Traitement image (.tif) avec 75 bandes";
+opt_personnalise = "Traitement image (.tif) personnalisé";
 nbBandesMax = 75; 
 bandeSelectionne = 30; 
 myImageID = "";
@@ -149,16 +150,13 @@ function definirThreshold(){
 	run("Threshold..."); //Ouvre Threshold                          
 	waitForUser("OK, pour appliquer le masque");
 	run("Convert to Mask");                   
-	run("Close")
 
 }
 
 //Date : 
-//Titre :
-//Description : 
+//Titre : 
+//Description :
 function ZPlot(){
-	
-	//Trouve le nom du fichier de base et le path
 	file = File.nameWithoutExtension;
 	dir = File.directory;
 
@@ -197,7 +195,7 @@ function choixDefault(){
 	}
 	else {
 		bandeSelectionne = selectionnerBand(false); //Demande bande NonPerso
-	    definirThreshold();//Defini threshold et applique masque
+	    definirThreshold(); //Defini threshold et applique masque
 	    ZPlot();
 	}
 	

@@ -81,7 +81,7 @@ function ouvrirCube(){
 	else{	
 //Essai avec le bio format, tu va voir sa donne un seul résultat
 //Essai avec le open que j'ai mis en commentaire à la place, et là, plusieur résultat
-    	run("Bio-Formats", "open=" + file + " autoscale color_mode=Default open_all_series rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT");
+    	run("Bio-Formats", "open=" + file + " autoscale color_mode=Default open_all_series rois_import=[ROI manager] view='Standard ImageJ'stack_order=XYCZT");
     	//open(file);
     	imageID = getImageID();
 		selectImage(imageID);

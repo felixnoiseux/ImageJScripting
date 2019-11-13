@@ -185,7 +185,7 @@ function selectionnerBand(estPersonnalise){
 	
 	Dialog.create("Selection bande cube");
 	Dialog.addMessage("Selectionner la bande a travaille sur votre cube.");
-	Dialog.addSlider("Bande :", 0, nbBandesMax, bandeSelectionne);
+	Dialog.addSlider("Bande :", 1, nbBandesMax, bandeSelectionne);
 	Dialog.show();
 	
 	bandeSelectionne = Dialog.getNumber();
@@ -227,6 +227,13 @@ function ZPlot(){
 	//Enregistre la table de résultat dans un fichier txt du même nom que l'image
 	saveAs("Results", dir + name + ".txt");
 	run("Close");
+	run("Close");
+
+	//Ferme la page "log"
+	if (isOpen("Log")) { 
+         selectWindow("Log"); 
+         run("Close"); 
+     } 
 }
 
 

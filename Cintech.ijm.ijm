@@ -23,31 +23,30 @@
 //	4. Calcul un ZPLOT et eneregistre les données
 //
 //	 ---Droit de modification permis avec plaisir.---
+//
+// Note: Les accents sont enlevés des textes pour ne pas avoir de problème d'affichage
 
 opt_default = "Traitement image (.tif) avec 75 bandes";
-opt_personnalise = "Traitement image (.tif) personnalisé";
+opt_personnalise = "Traitement image (.tif) personnalise";
 nbBandesMax = 75; 
 bandeSelectionne = 30; 
 myImageID = "";
 file = "";
 
-choix = fenetreChoix(); //Ligne 44
-if(choix == opt_default) { choixDefault();} // Ligne 64
-else if(choix == opt_personnalise){ choixPersonnalise(); } //Ligne 86
+choix = fenetreChoix();
+if(choix == opt_default) { choixDefault();}
+else if(choix == opt_personnalise){ choixPersonnalise(); }
 
 exit();
 
-//Date : 30 Octobre 2019
-//Titre : Fenetre Principal (Premiere Fenetre)
-//Description : Fenetre apparaissant au lancement du script laissant choix à l'utilisateur.
+//Date : 26 Novembre 2019
+//Titre : Fenêtre Principale (Premiere Fenetre)
+//Description : Fenêtre apparaissant au lancement du script laissant choix à l'utilisateur.
 //				Retourne le choix de l'utilisateur. Soit un cube = 75 bandes ou un cube != 75 bandes.
 function fenetreChoix(){
-	
-	opt_default = "Traitement image (.tif) avec 75 bandes";
-	opt_personnalise = "Traitement image (.tif) personnalisé";
 
 	Dialog.create("Traitement Cube");
-	Dialog.addMessage("Veuillez sélectionner ce que vous voulez faire.");
+	Dialog.addMessage("Veuillez selectionner ce que vous voulez faire.");
 	Dialog.addMessage("2 options sont disponibles.");
 	Dialog.addChoice("Options :", newArray(opt_default, opt_personnalise));
 	Dialog.show();
@@ -57,52 +56,53 @@ function fenetreChoix(){
 	
 }
 
-//Date : 30 Octobre 2019
+//Date : 26 Novembre 2019
 //Titre : Programme ChoixDefault
-//Description : Regrouppe tout les fonctionnalité du "Script". 
+//Description : Regrouppe toutes les fonctionnalités du "Script". 
 //				C'est ici que le tout ce passe pour un cube de 75 images.
 function choixDefault(){
 	
 	do{
-		myImageID = ouvrirCube(); //Ligne 107
+		myImageID = ouvrirCube();
 	}
-	while(myImageID == -1);
+	while(myImageID == 1);
 	
 	if(nSlices != nbBandesMax){
-		afficherErreurBande(); //Mauvais choix //Ligne 153
+		afficherErreurBande(); //Mauvais choix
 	}
 	else {
-		bandeSelectionne = selectionnerBand(false); //Demande bande NonPerso //Ligne 177
-	    definirThreshold(); //Definit threshold et applique masque //Ligne 206
-	    ZPlot(); //Ligne 207
+		bandeSelectionne = selectionnerBand(false); //Demande bande NonPerso 
+	    definirThreshold(); //Definit threshold et applique masque
+	    ZPlot(); 
 	}
 	
 }
 
-//Date : 30 Octobre 2019
-//Titre : Programme ChoixDefault
-//Description : Regrouppe tout les fonctionnalité du "Script". 
+//Date : 26 Novembre 2019
+//Titre : Programme ChoixPersonnalisé
+//Description : Regrouppe toutes les fonctionnalités du "Script". 
 //				C'est ici que le tout ce passe pour un cube autre que 75 images
 function choixPersonnalise(){
 	
 	do{
-		myImageID = ouvrirCube(); //Ligne 107
-	}while(myImageID == -1);
+		myImageID = ouvrirCube(); 
+	}
+	while(myImageID == 1);
 	
-	bandeSelectionne = selectionnerBand(true); //Demande bande Perso //Ligne 177
-	definirThreshold(); //Definit threshold et applique masque //Ligne 206
-	ZPlot(); //Ligne 207
+	bandeSelectionne = selectionnerBand(true); //Demande bande Perso 
+	definirThreshold(); //Definit threshold et applique masque 
+	ZPlot(); 
 	
 }
 
-//Date : 30 Octobre 2019
-//Titre : Fonction Permmant d'ouvrir un cube en gérant les exceptions
+//Date : 26 Novembre 2019
+//Titre : Fonction Permettant d'ouvrir un cube en gérant les exceptions
 //Description : Demande à l'utilisateur d'ouvrir un cube. Si le format n'est pas bon, affiche erreur et retourne -1.
 //				-1 Sert d'indicateur à la fonction parente.
 //
 //				do{
 //					myImageID = ouvrirCube();
-//				}while(myImageID == -1);
+//				}while(myImageID == 1);
 //
 function ouvrirCube(){
 
@@ -113,27 +113,27 @@ function ouvrirCube(){
 	
 	//Verifier si l'extension est bonne
 	length = lengthOf(file);
-	index = indexOf(file, ".");
+	index = lastIndexOf(file, ".");
 	extension = substring(file, index, length);
 
 	for(i=0;i<extensions.length;i++){
 		if(extensions[i] == extension)
 		{
 			estBonneExtension = true;
+			break;
 		}
 	}
 
 	if(!estBonneExtension){
-		afficherContenu("Type d'extensions autorisé : .tif, .tiff, .TIFF, .tf2, .tf8, .btf, .ome.tif" ,"Erreur d'extension");// ligne 144
+		afficherContenu("Type d'extensions autorise : .tif, .tiff, .TIFF, .tf2, .tf8, .btf, .ome.tif" ,"Erreur d'extension");
 	}
 	else{	
     	run("Bio-Formats", "open=" + file + " autoscale color_mode=Default open_all_series rois_import=[ROI manager] view='Standard ImageJ'stack_order=XYCZT");
-    	//open(file);
     	imageID = getImageID();
 		selectImage(imageID);
 		return imageID;
 	}
-	return -1;
+	return 1;
 	
 }
 
@@ -147,7 +147,7 @@ function afficherContenu(contenu,titre){
 	Dialog.show();
 }
 
-//Date : 30 Octobre 2019
+//Date : 26 Novembre 2019
 //Titre : Fonction affichant erreur si la bande n'est pas 75.
 //Description : Laisse le choix à l'utilisateur de continuer, en version personnalisée, ou quitter.
 function afficherErreurBande(){
@@ -155,28 +155,27 @@ function afficherErreurBande(){
 	close();
 	Dialog.create("Erreur");
 	Dialog.addMessage("Ce cube ne contient pas 75 bandes.");	
-	Dialog.addChoice("Voulez-vous être redirigé vers la version personnalisé  ? \n En répondant : Non vous fermer le programme.", newArray("Oui", "Non"));
+	Dialog.addChoice("Voulez-vous être redirige vers la version personnalisee  ? \n En repondant : Non vous fermez le programme.", newArray("Oui", "Non"));
 	Dialog.show();
 	
 	choix = Dialog.getChoice();
 	if(choix == "Oui"){
 		
 choixPersonnalise();
-	}else if(choix == "Non"){
-		exit();
-	}else{
+	}
+	else{
 		exit();
 	}
 
 }
 
 
-//Date : 30 Octobre 2019
+//Date : 26 Novembre 2019
 //Titre : Fonction permettant de selectionner la bande à travailler.
 //Description : Si estPersonnalisé, la bande MAX n'est plus 75, mais le max de la personnalisé.
 function selectionnerBand(estPersonnalise){
 
-	if(estPersonnalise == true) {
+	if(estPersonnalise) {
 		nbBandesMax = nSlices;
 		diviseur = nbBandesMax % 2;
 		bandeSelectionne = (nbBandesMax - diviseur)/2;
@@ -184,7 +183,7 @@ function selectionnerBand(estPersonnalise){
 	
 	
 	Dialog.create("Selection bande cube");
-	Dialog.addMessage("Selectionner la bande a travaille sur votre cube.");
+	Dialog.addMessage("Selectionner la bande a utiliser dans votre cube.");
 	Dialog.addSlider("Bande :", 1, nbBandesMax, bandeSelectionne);
 	Dialog.show();
 	
@@ -214,9 +213,9 @@ function definirThreshold(){
 	run("Close");
 }
 
-//Date : 13 novembre 2019
+//Date : 26 novembre 2019
 //Titre : Fonction entourant le diagramme
-//Description : Sort les means et stdev et les enregistres dans un fichier txt
+//Description : Sort les means et stdev
 function ZPlot(){
 	name = File.nameWithoutExtension;
 	dir = File.directory;
@@ -224,18 +223,56 @@ function ZPlot(){
 	run("Set Measurements...", "mean standard redirect=None decimal=3");
 	run("Measure Stack...");
 
+	SaveResult();
+}
+
+//Date : 26 novembre 2019
+//Titre : Sauvegarde les résultats + le total des means et l'écart-type
+//Description : Enregistres les means et stdev dans un fichier txt
+function SaveResult()
+{
+	DebutSelection = 0;
+	FinSelection =0;
+
+	if(nSlices == 300)
+	{
+		DebutSelection = 266;
+		FinSelection =275;
+	}
+	else if(nSlices == 150)
+	{
+		DebutSelection = 133;
+		FinSelection =137;
+	}
+	else if(nSlices == 75)
+	{
+		DebutSelection = 66;
+		FinSelection =69;
+	}
+
+	TotalMean=0;
+	TotalStdev =0;
+
+	for (i = DebutSelection; i <= FinSelection; i++) {
+		TotalMean += getResult("Mean", i-1);
+	}
+
+	TotalStdev =(getResult("StdDev", FinSelection-1) - getResult("StdDev", DebutSelection-1))/2;
+
+	setResult("TotalMean", 0, TotalMean);
+	setResult("EcartType", 0, TotalStdev);
+
 	//Enregistre la table de résultat dans un fichier txt du même nom que l'image
 	saveAs("Results", dir + name + ".txt");
 	run("Close");
 	run("Close");
 
-	//Ferme la page "log"
+	Ferme la page "log"
 	if (isOpen("Log")) { 
          selectWindow("Log"); 
-         run("Close"); 
-     } 
+      / run("Close"); 
+    } 
 }
-
 
 
 
